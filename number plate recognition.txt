@@ -1,26 +1,39 @@
+import string
 import cv2
 import numpy as np
-import pytesseract
+import easyocr
+from easyocr import Reader
+reader=easyocr.Reader(['en'])
 
-pytesseract.pytesseract.tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-cascade=cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")
+frameWidth = 640    #Frame Width
+franeHeight = 480   # Frame Height
 
-def getnumber(imgfile):
-    img=cv2.imread(imgfile)
+plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")
+minArea = 500
 
-    gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+cap =cv2.VideoCapture(0)
+cap.set(3,frameWidth)
+cap.set(4,franeHeight)
+cap.set(10,150)
+count = 0
 
-    nplate=cascade.detectMultiScale(gray,1.1,4)
-    for (x,y,w,h) in nplate:
-        a, b = (int(0.02 * img.shape[0]), int(0.025 * img.shape[1]))
-        plate = img[y + a:y + h - a, x + b:x + w - b, :]
-        kernel = np.ones((1, 1), np.uint8)
-        plate = cv2.dilate(plate, kernel, iterations=1)
-        plate = cv2.erode(plate, kernel, iterations=1)
-        plate_gray = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
-        (thresh, plate) = cv2.threshold(plate_gray, 127, 255, cv2.THRESH_BINARY)
-        read = pytesseract.image_to_string(plate)
-        read =''.join(e for e in read if e.isalnum())
-        print(read)
 
-getnumber('D:\hack\image3.jpg')
+success=cv2.imread("D:\hack\images\i3.jpg")
+img  = cv2.imread("D:\hack\images\i3.jpg")
+
+imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)
+
+for (x, y, w, h) in numberPlates:
+        area = w*h
+        if area > minArea:
+
+            imgRoi = img[y:y+h,x:x+w]
+            break
+
+
+test=reader.readtext(imgRoi)
+if len(test)!=0:
+    print(test[0][-2])
+    print("accuracy= ",test[0][-1])
