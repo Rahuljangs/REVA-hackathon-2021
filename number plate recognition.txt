@@ -3,37 +3,78 @@ import cv2
 import numpy as np
 import easyocr
 from easyocr import Reader
-reader=easyocr.Reader(['en'])
+import glob
+import pandas as pd
+import csv
+import matplotlib.pyplot as plt
 
-frameWidth = 640    #Frame Width
-franeHeight = 480   # Frame Height
+
+location = ['a', 'b', 'c']
+count = [0, 0, 0]
+reader = easyocr.Reader(['en'])
+frameWidth = 640
+franeHeight = 480
+
+
+
+
 
 plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")
 minArea = 500
-
-cap =cv2.VideoCapture(0)
-cap.set(3,frameWidth)
-cap.set(4,franeHeight)
-cap.set(10,150)
-count = 0
+number_plate_data = ''
 
 
-success=cv2.imread("D:\hack\images\i3.jpg")
-img  = cv2.imread("D:\hack\images\i3.jpg")
 
-imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+path = glob.glob("D:\hack\images\*.jpg")
+for temp in path:
+    img = cv2.imread(temp)
+    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)
+    for (x, y, w, h) in numberPlates:
 
-numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)
-
-for (x, y, w, h) in numberPlates:
-        area = w*h
+        area = w * h
         if area > minArea:
-
-            imgRoi = img[y:y+h,x:x+w]
+            img_cropped = img[y:y + h, x:x + w]
             break
+    test = reader.readtext(img_cropped)
+    if len(test) != 0:
+        number_plate_data = number_plate_data + '\n' + str(test[0][-2])
+        print(test[0][-2])
+        print("accuracy= ", test[0][-1])
 
 
-test=reader.readtext(imgRoi)
-if len(test)!=0:
-    print(test[0][-2])
-    print("accuracy= ",test[0][-1])
+
+
+while (1):
+    x=f.readline()
+    if not x:
+        break
+    if x[0] == 'a':
+        count[0] = count[0] + 1
+
+    elif x[0] == 'b':
+        count[1] = count[1] + 1
+
+    elif x[0] == 'c':
+        count[2] = count[2] + 1
+
+
+
+with open('D:\hack\\userdata\\outputdata.csv', 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerows([['frequency','path']])
+with open('D:\hack\\userdata\\outputdata.csv', 'a', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerows([[count[0], 'a-b']])
+    writer.writerows([[count[1], 'b-c']])
+    writer.writerows([[count[2], 'c-a']])
+
+
+
+iris=pd.read_csv('D:\\hack\\userdata\\outputdata.csv')
+x=iris['path']
+y=iris['frequency']
+plt.xlabel('path')
+plt.ylabel('frequency')
+plt.bar(x,y)
+plt.show()
