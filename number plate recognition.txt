@@ -13,7 +13,7 @@ location = ['a-b-c-d', 'a-b-d-c', 'a-c-b-d','a-c-d-b','b-a-c-d','b-a-d-c','b-c-a
 
 count = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]                        #to store count of the location
 reader = easyocr.Reader(['en'])
-frameWidth = 640                         #default image size to be cropped
+frameWidth = 640                                                 #default image size to be cropped
 franeHeight = 480
 
 
@@ -35,12 +35,17 @@ for temp in path:                                                          #trav
             if area > minArea:                                             #if the area is greater than minimum area
                 img_cropped = img[y:y + h, x:x + w]                        #cropping it specifically
                 break
+
         test = reader.readtext(img_cropped)                                          #reading txt format from the cropped image(number plate)
         if len(test) != 0:                                                           #if string is not empty
             number_plate_data = number_plate_data + '\n' + str(test[0][-2])          #it will append each number plate string in it
             print(test[0][-2])                                                       #printing the registration number
             print("accuracy= ", test[0][-1])                                         #printing the accuracy of the registration number to be correct
-
+        cv2.rectangle(img, ([x, y]), ([x + w, y + h]), (0, 255, 0), 1)                                                  #adds an rectangle on the number plate
+        cv2.putText(img, test[0][-2], (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA, False)           #adds number plate string on the rectangle
+        cv2.imshow("rectangle", img)                                                                                    #displaying image
+        cv2.imshow("number plate", img_cropped)                                                                         #displaying number plate image
+        cv2.waitKey(0)                                                                                                  #waiting for the user to close the image windows
 
 
 with open('D:\hack\\userdata\\inputdata.csv', 'r') as f:                   #opening the inputdata file to read
@@ -50,35 +55,35 @@ with open('D:\hack\\userdata\\inputdata.csv', 'r') as f:                   #open
             break
         if x[0:7] == 'a-b-c-d':                                                    #checking if the location is a-b-c-d
             count[0] = count[0] + 1                                                #increment of frequency of a-b-c-d
-        elif x[0:7] == 'a-b-d-c':                                                 
-            count[1] = count[1] + 1                                       
-        elif x[0:7] == 'a-c-b-d':                                                  #same process 
-            count[2] = count[2] + 1                                      
-        elif x[0:7] == 'a-c-d-b':                                                
+        elif x[0:7] == 'a-b-d-c':
+            count[1] = count[1] + 1
+        elif x[0:7] == 'a-c-b-d':                                                  #same process
+            count[2] = count[2] + 1
+        elif x[0:7] == 'a-c-d-b':
             count[3] = count[3] + 1
-        elif x[0:7] == 'b-a-c-d':                                                  
+        elif x[0:7] == 'b-a-c-d':
             count[4] = count[4] + 1
-        elif x[0:7] == 'b-a-d-c':                                                 
+        elif x[0:7] == 'b-a-d-c':
             count[5] = count[5] + 1
-        elif x[0:7] == 'b-c-a-d':                                               
+        elif x[0:7] == 'b-c-a-d':
             count[6] = count[6] + 1
-        elif x[0:7] == 'b-c-d-a':                                                 
+        elif x[0:7] == 'b-c-d-a':
             count[7] = count[7] + 1
-        elif x[0:7] == 'c-a-b-d':                                             
+        elif x[0:7] == 'c-a-b-d':
             count[8] = count[8] + 1
-        elif x[0:7] == 'c-a-d-b':                                               
+        elif x[0:7] == 'c-a-d-b':
             count[9] = count[9] + 1
-        elif x[0:7] == 'c-b-a-d':                                                 
+        elif x[0:7] == 'c-b-a-d':
             count[10] = count[10] + 1
-        elif x[0:7] == 'c-b-d-a':                                                  
+        elif x[0:7] == 'c-b-d-a':
             count[11] = count[11] + 1
-        elif x[0:7] == 'd-a-b-c':                                                 
+        elif x[0:7] == 'd-a-b-c':
             count[12] = count[12] + 1
-        elif x[0:7] == 'd-a-c-b':                                                 
+        elif x[0:7] == 'd-a-c-b':
             count[13] = count[13] + 1
-        elif x[0:7] == 'd-c-a-b':                                                  
+        elif x[0:7] == 'd-c-a-b':
             count[14] = count[14] + 1
-        elif x[0:7] == 'd-c-b-a':                                                  
+        elif x[0:7] == 'd-c-b-a':
             count[15] = count[15] + 1
 
 
