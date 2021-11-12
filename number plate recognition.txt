@@ -1,80 +1,124 @@
-import string
-import cv2
-import numpy as np
-import easyocr
+import string                            #to use string functions
+import cv2                               #to perform image processing
+import easyocr                           #to read text from the image
 from easyocr import Reader
-import glob
-import pandas as pd
-import csv
-import matplotlib.pyplot as plt
+import glob                              #to read multiple images at once
+import pandas as pd                      #to perferm data visualization
+import csv                               #to read, change the image
+import matplotlib.pyplot as plt          #to perform data visualization
 
 
-location = ['a', 'b', 'c']
-count = [0, 0, 0]
+location = ['a-b-c-d', 'a-b-d-c', 'a-c-b-d','a-c-d-b','b-a-c-d','b-a-d-c','b-c-a-d','b-c-d-a','c-a-b-d','c-a-d-b','c-b-a-d','c-b-d-a','d-a-b-c','d-a-c-b','d-c-a-b','d-c-b-a']
+#defining the locations available
+
+count = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]                        #to store count of the location
 reader = easyocr.Reader(['en'])
-frameWidth = 640
+frameWidth = 640                         #default image size to be cropped
 franeHeight = 480
 
 
 
 
-
-plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")
-minArea = 500
-number_plate_data = ''
-
+plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")       #reads the .xml file to refer image classification
+minArea = 500                                                                              #default minimum area
+number_plate_data = ''                                                                     #variable to store numebr plate string
 
 
-path = glob.glob("D:\hack\images\*.jpg")
-for temp in path:
-    img = cv2.imread(temp)
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)
-    for (x, y, w, h) in numberPlates:
 
-        area = w * h
-        if area > minArea:
-            img_cropped = img[y:y + h, x:x + w]
+path = glob.glob("D:\hack\images\*.jpg")                                   #reading images present inside folder of type jpg
+for temp in path:                                                          #traversing each image
+        img = cv2.imread(temp)                                             #storing temp image in img
+        imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)                    #storing grayscale of the image
+        numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)      #selecting a range of grayscale values to detect the rectangle portion of number plate
+        for (x, y, w, h) in numberPlates:                                  #iterating cordinates, width, and height
+            area = w * h                                                   #finding area of the number plate
+            if area > minArea:                                             #if the area is greater than minimum area
+                img_cropped = img[y:y + h, x:x + w]                        #cropping it specifically
+                break
+        test = reader.readtext(img_cropped)                                          #reading txt format from the cropped image(number plate)
+        if len(test) != 0:                                                           #if string is not empty
+            number_plate_data = number_plate_data + '\n' + str(test[0][-2])          #it will append each number plate string in it
+            print(test[0][-2])                                                       #printing the registration number
+            print("accuracy= ", test[0][-1])                                         #printing the accuracy of the registration number to be correct
+
+
+
+with open('D:\hack\\userdata\\inputdata.csv', 'r') as f:                   #opening the inputdata file to read
+    while (1):
+        x=f.readline()                                                     #reading each line per loop
+        if not x:
             break
-    test = reader.readtext(img_cropped)
-    if len(test) != 0:
-        number_plate_data = number_plate_data + '\n' + str(test[0][-2])
-        print(test[0][-2])
-        print("accuracy= ", test[0][-1])
+        if x[0:7] == 'a-b-c-d':                                                    #checking if the location is a-b-c-d
+            count[0] = count[0] + 1                                                #increment of frequency of a-b-c-d
+        elif x[0:7] == 'a-b-d-c':                                                 
+            count[1] = count[1] + 1                                       
+        elif x[0:7] == 'a-c-b-d':                                                  #same process 
+            count[2] = count[2] + 1                                      
+        elif x[0:7] == 'a-c-d-b':                                                
+            count[3] = count[3] + 1
+        elif x[0:7] == 'b-a-c-d':                                                  
+            count[4] = count[4] + 1
+        elif x[0:7] == 'b-a-d-c':                                                 
+            count[5] = count[5] + 1
+        elif x[0:7] == 'b-c-a-d':                                               
+            count[6] = count[6] + 1
+        elif x[0:7] == 'b-c-d-a':                                                 
+            count[7] = count[7] + 1
+        elif x[0:7] == 'c-a-b-d':                                             
+            count[8] = count[8] + 1
+        elif x[0:7] == 'c-a-d-b':                                               
+            count[9] = count[9] + 1
+        elif x[0:7] == 'c-b-a-d':                                                 
+            count[10] = count[10] + 1
+        elif x[0:7] == 'c-b-d-a':                                                  
+            count[11] = count[11] + 1
+        elif x[0:7] == 'd-a-b-c':                                                 
+            count[12] = count[12] + 1
+        elif x[0:7] == 'd-a-c-b':                                                 
+            count[13] = count[13] + 1
+        elif x[0:7] == 'd-c-a-b':                                                  
+            count[14] = count[14] + 1
+        elif x[0:7] == 'd-c-b-a':                                                  
+            count[15] = count[15] + 1
+
+
+with open('D:\hack\\userdata\\outputdata.csv', 'w', newline='') as f:                         #creating outputdata.csv to write
+        writer = csv.writer(f)
+        writer.writerows([['frequency','path']])                                              #writing the header of the csv file
+with open('D:\hack\\userdata\\outputdata.csv', 'a', newline='') as f:                         #opening the output.csv file to append
+        writer = csv.writer(f)
+        writer.writerows([[count[0], 'a-b-c-d']])                                             #appending the paths and frequency into it
+        writer.writerows([[count[1], 'a-b-d-c']])
+        writer.writerows([[count[2], 'a-c-b-d']])
+        writer.writerows([[count[3], 'a-c-d-b']])
+        writer.writerows([[count[4], 'b-a-c-d']])
+        writer.writerows([[count[5], 'b-a-d-c']])
+        writer.writerows([[count[6], 'b-c-a-d']])
+        writer.writerows([[count[7], 'b-c-d-a']])
+        writer.writerows([[count[8], 'c-a-b-d']])
+        writer.writerows([[count[9], 'c-a-d-b']])
+        writer.writerows([[count[10], 'c-b-a-d']])
+        writer.writerows([[count[11], 'c-b-d-a']])
+        writer.writerows([[count[12], 'd-a-b-c']])
+        writer.writerows([[count[13], 'd-a-c-b']])
+        writer.writerows([[count[14], 'd-c-a-b']])
+        writer.writerows([[count[15], 'd-c-b-a']])
 
 
 
-
-while (1):
-    x=f.readline()
-    if not x:
-        break
-    if x[0] == 'a':
-        count[0] = count[0] + 1
-
-    elif x[0] == 'b':
-        count[1] = count[1] + 1
-
-    elif x[0] == 'c':
-        count[2] = count[2] + 1
+barg=pd.read_csv('D:\\hack\\userdata\\outputdata.csv')                                        #reading outputdata.csv for data visualization
+x=barg['path']                                                                                #selecting column 1 as x-axix
+y=barg['frequency']                                                                           #selecting column 2 as y-axis
+plt.xlabel('path')                                                                            #labelling x-axis as path
+plt.ylabel('frequency')                                                                       #labelling y-axis as frequency
+plt.bar(x,y)                                                                                  #using bar plot function
+plt.show()                                                                                    #displaying the bar graph
 
 
-
-with open('D:\hack\\userdata\\outputdata.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerows([['frequency','path']])
-with open('D:\hack\\userdata\\outputdata.csv', 'a', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerows([[count[0], 'a-b']])
-    writer.writerows([[count[1], 'b-c']])
-    writer.writerows([[count[2], 'c-a']])
-
-
-
-iris=pd.read_csv('D:\\hack\\userdata\\outputdata.csv')
-x=iris['path']
-y=iris['frequency']
-plt.xlabel('path')
-plt.ylabel('frequency')
-plt.bar(x,y)
-plt.show()
+chart=pd.read_csv('D:\\hack\\userdata\\outputdata.csv')                                       #reading outputdata.csv for data visualization
+chart=chart.groupby('path')['frequency'].sum().to_frame().reset_index()
+plt.plot(chart['path'], chart['frequency'])                                                   #selecting the columns
+plt.title('Chart')                                                                            #labelling title as Chart
+plt.xlabel('Paths')                                                                           #labelling x-axis as path
+plt.ylabel('Frequency')                                                                       #labelling y-axis as frequency
+plt.show()                                                                                    #displaying the bar graph
