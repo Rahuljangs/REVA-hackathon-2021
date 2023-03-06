@@ -1,10 +1,10 @@
 import string                            #to use string functions
 import cv2                               #to perform image processing
-import easyocr                           #to read text from the image
+import easyocr                           #to read text from an image
 from easyocr import Reader
 import glob                              #to read multiple images at once
 import pandas as pd                      #to perferm data visualization
-import csv                               #to read, change the image
+import csv                               #to read and update the datafiles
 import matplotlib.pyplot as plt          #to perform data visualization
 
 
@@ -18,18 +18,18 @@ reader = easyocr.Reader(['en'])
 
 
 
-plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")       #reads the .xml file to refer image classification
+plateCascade = cv2.CascadeClassifier("D:\hack\haarcascade_russian_plate_number.xml")       #uses an algorithm to perform image classification
 minArea = 500                                                                              #default minimum area
-number_plate_data = ''                                                                     #variable to store numebr plate string
+number_plate_data = ''                                                                     #variable to store number plate data as a string
 
 
 
-path = glob.glob("D:\hack\images\*.jpg")                                   #reading images present inside folder of type jpg
+path = glob.glob("D:\hack\images\*.jpg")                                   #reading the images present inside the folder of type jpg
 for temp in path:                                                          #traversing each image
-        img = cv2.imread(temp)                                             #storing temp image in img
+        img = cv2.imread(temp)                                             #reading the image 
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)                    #storing grayscale of the image
-        numberPlates = plateCascade.detectMultiScale(imgGray, 1.1, 4)      #selecting a range of grayscale values to detect the rectangle portion of number plate
-        for (x, y, w, h) in numberPlates:                                  #iterating cordinates, width, and height
+        coordinates = plateCascade.detectMultiScale(imgGray, 1.1, 4)      #using the classifier to detect the edges of the number plate from the image
+        for (x, y, w, h) in coordinates:                                  #iterating through the coordinates, width and height
             area = w * h                                                   #finding area of the number plate
             if area > minArea:                                             #if the area is greater than minimum area
                 img_cropped = img[y:y + h, x:x + w]                        #cropping it specifically
@@ -49,7 +49,7 @@ for temp in path:                                                          #trav
 
 
 with open('D:\hack\\userdata\\ODataByUser.csv', 'w', newline='') as f:                      #opening ODataByUser.csv to write
-    writer = csv.writer(f)                                                                  #creating object to write
+    writer = csv.writer(f)                                                                  #creating an object to write
     writer.writerows([[ 'path','registration number']])                                     #writing 'Path' and 'registration number' into the file
 fo=open('D:\hack\\userdata\\ODataByUser.csv', 'a', newline='')                              #opening ODataByUser.csv to append
 writer = csv.writer(fo)                                                                     #creating object to append
